@@ -1,0 +1,108 @@
+/* .Container {
+    display: flex;
+    gap: 24px;
+  } */
+  
+  /* Content */
+  .Content {
+    flex: 5;
+  }
+  
+  /* VideoWrapper */
+  .VideoWrapper {
+    /* Add your styles here */
+  }
+  
+  /* Title */
+  .Title {
+    font-size: 18px;
+    font-weight: 400;
+  }
+  
+  /* Details */
+  .Details {
+    justify-content: space-between;
+  }
+  
+  /* Info */
+  .Info {
+    /* Use your theme color value instead of ${({ theme }) => theme.textSoft} */
+    color: your_theme_text_soft_color;
+  }
+  
+  /* Buttons */
+  .Buttons {
+    display: flex;
+    gap: 20px;
+    /* Use your theme color value instead of ${({ theme }) => theme.text} */
+    color: your_theme_text_color;
+  }
+  
+  /* Button */
+  .Button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+  }
+  
+  /* Hr */
+  .Hr {
+    margin: 15px 0px;
+  }
+  
+  /* Recommendation */
+  .Recommendation {
+    flex: 2;
+  }
+  
+  /* Channel */
+  .Channel {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  /* ChannelInfo */
+  .ChannelInfo {
+    display: flex;
+    gap: 20px;
+  }
+  
+  /* ChannelDetail */
+  .ChannelDetail {
+    display: flex;
+    flex-direction: column;
+    color: black;
+  }
+  
+  /* ChannelName */
+  .ChannelName {
+    font-weight: 500;
+  }
+  
+  /* ChannelCounter */
+  .ChannelCounter {
+    margin-top: 5px;
+    margin-bottom: 20px;
+    /* Use your theme color value instead of ${({ theme }) => theme.textSoft} */
+    color: your_theme_text_soft_color;
+    font-size: 12px;
+  }
+  
+  /* Description */
+  .Description {
+    font-size: 14px;
+  }
+  
+  /* Subscribe */
+  .Subscribe {
+    background-color: #cc1a00;
+    font-weight: 500;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    height: max-content;
+    padding: 10px 20px;
+    cursor: pointer;
+  }
+  
