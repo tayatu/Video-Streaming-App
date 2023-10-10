@@ -1,18 +1,15 @@
 import React, { useEffect, useState } from "react";
 import Comments from "../components/Comments";
-import Card from "../components/Card";
 import axios from "axios";
-
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
-
-import "./Video.css";
 import { fetchSuccess, like, share, unlike } from "../redux/videoSlice";
 import { subscription } from "../redux/userSlice";
 import VideoDescription from "../components/VideoComponent";
 import ChannelDescription from "../components/ChannelDescription";
 import Recommendation from "../components/Recommandation";
 import VideoPlayer from "../components/VideoPlayer";
+import "./Video.css";
 
 const Video = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -75,32 +72,35 @@ const Video = () => {
   }, [path, dispatch]);
 
   return (
-    <div className="Container">
-      <div className="Content">
-        <div className="VideoWrapper">
-        <VideoPlayer src = "mount-video"/>
-
+    <div className="video-page">
+      <div className="video-container">
+        <div className="video-player">
+          <VideoPlayer src="mount-video" />
         </div>
 
         <VideoDescription
           currentVideo={currentVideo}
           isLiked={isLiked}
           handleLike={handleLike}
-          handleShare = {handleShare}
+          handleShare={handleShare}
         />
-        <hr className="Hr" />
+        <hr className="divider" />
 
         <ChannelDescription
           channel={channel}
           handleSubscribe={handleSubscribe}
         />
 
-        <hr className="Hr"></hr>
-        <Comments videoId={currentVideo._id} />
-      </div>
+        <div className="recommendation">
+          <Recommendation
+            currentVideo={currentVideo}
+            tags={currentVideo.tags}
+          />
+        </div>
 
-      <div className="Recommendation">
-        <Recommendation currentVideo = {currentVideo} tags={currentVideo.tags} />
+        <Comments videoId={currentVideo._id} />
+
+        <hr className="divider"></hr>
       </div>
     </div>
   );

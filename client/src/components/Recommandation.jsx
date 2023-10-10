@@ -2,7 +2,6 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Card from "./Card";
 
-
 const Recommendation = ({ currentVideo, tags }) => {
   const [videos, setVideos] = useState([]);
 
@@ -14,10 +13,12 @@ const Recommendation = ({ currentVideo, tags }) => {
     fetchVideos();
   }, [tags]);
 
-  const filteredVideos = videos.filter((video) => video._id !== currentVideo._id);
+  const filteredVideos = videos.filter(
+    (video) => video._id !== currentVideo._id
+  );
 
   return (
-    <div>
+    <div className="Container">
       {filteredVideos.map((video) => (
         <Card key={video._id} video={video} />
       ))}

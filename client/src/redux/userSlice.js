@@ -28,18 +28,38 @@ export const userSlice = createSlice({
     },
     subscription: (state, action) => {
       if (state.currentUser.subscribedChannels.includes(action.payload)) {
-        state.currentUser.subscribedChannels.splice(
-          state.currentUser.subscribedChannels.findIndex(
-            (channelId) => channelId === action.payload
-          ),
-        );
+        state.currentUser.subscribersList =
+          state.currentUser.subscribersList.filter(
+            (subscribedUserId) => subscribedUserId !== action.payload
+          );
+        state.currentUser.subscribedChannels =
+          state.currentUser.subscribedChannels.filter(
+            (channelId) => channelId !== action.payload
+          );
       } else {
         state.currentUser.subscribedChannels.push(action.payload);
       }
     },
+    remove_subscriber: (state, action) => {
+      state.currentUser.subscribersList =
+        state.currentUser.subscribersList.filter(
+          (subscribedUserId) => subscribedUserId !== action.payload
+        );
+      state.currentUser.subscribedChannels =
+        state.currentUser.subscribedChannels.filter(
+          (channelId) => channelId !== action.payload
+        );
+    },
   },
 });
 
-export const { loginStart, loginSuccess, loginFailure, logout, subscription } = userSlice.actions;
+export const {
+  loginStart,
+  loginSuccess,
+  loginFailure,
+  logout,
+  subscription,
+  remove_subscriber,
+} = userSlice.actions;
 
 export default userSlice.reducer;

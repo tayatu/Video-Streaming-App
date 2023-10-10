@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import axios from "axios";
 
-// import "./Card.css";
+import "./Card.css";
 
 const Card = ({ video }) => {
   const formatDateAgo = (createdAt) => {
@@ -11,8 +11,6 @@ const Card = ({ video }) => {
     return formatDistanceToNow(createdDate, { addSuffix: true });
   };
   const [channel, setChannel] = useState({});
-
-  console.log(video.imgUrl);
 
   useEffect(() => {
     const fetchChannel = async () => {
@@ -22,25 +20,25 @@ const Card = ({ video }) => {
     fetchChannel();
   }, [video.userId]);
   return (
-    <Link to={`/video/${video._id}`} style={{ textDecoration: "none" }}>
-      <div className="Container">
-        <div className="Details">
+    <Link to={`/video/${video._id}`} className="card-link">
+      <div className="card-container">
+        <div className="card-details">
           <img
-            style={{ width: "200px", height: "150px" }} // Adjust the width and height as needed
-            className="ChannelImage"
+            className="card-thumbnail"
             src={`/videos/images/${video.imgUrl}`}
-            alt="Channel Thumbnail"
+            alt="Video Thumbnail"
           />
-
-          <div className="Texts">
-            <h1 className="Title">{video.title}</h1>
-            <img
-              className="ChannelImage"
-              src={channel.img}
-              alt="Channel Thumbnail"
-            />
-            <h2 className="ChannelName">{channel.name}</h2>
-            <div className="Info">
+          <div className="card-texts">
+            <h1 className="card-title">{video.title}</h1>
+            <div className="card-channel">
+              <img
+                className="card-channel-thumbnail"
+                src={channel.img}
+                alt="Channel Thumbnail"
+              />
+              <h2 className="card-channel-name">{channel.name}</h2>
+            </div>
+            <div className="card-info">
               {video.views} views - {formatDateAgo(video.createdAt)}
             </div>
           </div>

@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import { createError } from "../error.js";
@@ -18,7 +17,6 @@ export const signup = async (req, res, next) => {
   }
 };
 
-// user is signin by name not email
 export const signin = async (req, res, next) => {
   try {
     const user = await User.findOne({ name: req.body.name });

@@ -1,11 +1,10 @@
-// SignIn.jsx
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import axios from "axios";
 import { loginFailure, loginStart, loginSuccess } from "../redux/userSlice";
 
-// import "./SignIn.css";
+import "./SignIn.css";
 
 const SignIn = () => {
   const [name, setName] = useState("");
@@ -31,7 +30,6 @@ const SignIn = () => {
     <div className="container">
       <div className="wrapper">
         <h1 className="title">Sign in</h1>
-        <h2 className="subtitle">to continue to LamaTube</h2>
         <input
           className="input"
           placeholder="username"
@@ -65,8 +63,6 @@ const SignIn = () => {
           onChange={(e) => setPassword(e.target.value)}
         />
         <button className="button">Sign up</button>
-
-        
       </div>
     </div>
   );

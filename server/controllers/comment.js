@@ -1,5 +1,7 @@
 import Comment from "../models/Comment.js";
 import Video from "../models/Video.js";
+import { createError } from "../error.js";
+
 
 export const addComment = async (req, res, next) => {
   try {
@@ -25,7 +27,7 @@ export const deleteComment = async (req, res, next) => {
     const comment = await Comment.findById(req.params.id);
 
     if (!comment) {
-      return res.status(404).json("Comment not found");
+      return next(createError(404, "Comment not found"));
     }
 
     const video = await Video.findById(comment.videoId);
@@ -33,7 +35,7 @@ export const deleteComment = async (req, res, next) => {
       await Comment.findByIdAndDelete(req.params.id);
       return res.status(200).json("The comment has been deleted.");
     }
-    return res.status(403).json("You are not authorized to delete the comment");
+    return next(createError(403, "You are not authorized"));
   } catch (err) {
     next(err);
   }

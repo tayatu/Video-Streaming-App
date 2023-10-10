@@ -1,20 +1,28 @@
 .NewComment {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  margin-top: 20px;
 }
 
-.Avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-}
-
-.Input {
-  border: none;
-  color: black;
-  background-color: transparent;
-  outline: none;
-  padding: 5px;
+.NewComment input[type="text"] {
   width: 100%;
+  padding: 10px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.NewComment button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.NewComment button:hover {
+  background-color: #0056b3;
+}
+
+span {
+  font-weight: bold;
 }

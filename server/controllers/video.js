@@ -7,24 +7,23 @@ import LikedVideo from "../models/LikedVideo.js";
 import fs from "fs";
 import mongodb from "mongodb";
 import { createError } from "../error.js";
-import { ObjectId } from "mongodb";
 import { exec } from "child_process";
 import mongoose from "mongoose";
-import sharp from "sharp"
+import compressImages from "compress-images";
 
 const execAsync = util.promisify(exec);
 
-const deleteLocalVideoFile = (localFilePath) => {
+const deleteLocalFile = (localFilePath) => {
   fs.unlink(localFilePath, (err) => {
     if (err) {
-      console.error("Error deleting local video file:", err);
+      console.error("Error deleting local file:", err);
     } else {
-      console.log("Local video file deleted:", localFilePath);
+      console.log("Local file deleted:", localFilePath);
     }
   });
 };
 
-export const init_video = async (videoPath, videoId) => {
+const init_video = async (videoPath, videoId) => {
   try {
     const client = mongoose.connection.getClient();
     const db = client.db("videos");
@@ -55,7 +54,7 @@ export const init_video = async (videoPath, videoId) => {
         await new Promise((resolve) => {
           videoUploadStream.on("finish", () => {
             console.log(`Video upload to GridFS (${name}) completed.`);
-            // deleteLocalVideoFile(outputHLSPath);
+            deleteLocalFile(outputHLSPath);
             resolve();
           });
         });
@@ -65,40 +64,84 @@ export const init_video = async (videoPath, videoId) => {
     });
 
     await Promise.all(resolutionPromises);
-    // deleteLocalVideoFile(inputVideoPath);
+    deleteLocalFile(inputVideoPath);
   } catch (error) {
     console.error("Error uploading video:", error);
     next(error);
   }
 };
 
-export const init_image = async (imageURL) => {
-  try {
-    const client = mongoose.connection.getClient();
-    const db = client.db("images");
-    const bucket = new mongodb.GridFSBucket(db);
-    const inputImagePath = `../server/public/images/${imageURL}`;
+const compressImageAndUpload = async (imageURL, videoId) => {
+  const inputImagePath = `../server/public/images/${imageURL}`;
+  const compressedFilePath = `../server/public/uploads/`;
+  const filePath = "temp-uploads/" + videoId + imageURL;
 
-    const imageUploadStream = bucket.openUploadStream(`${imageURL}`);
+  const compression = 60;
 
-    const imageReadStream = fs.createReadStream(inputImagePath);
+  fs.readFile(inputImagePath, function (error, data) {
+    if (error) throw error;
 
-    const compressedImage = sharp(imageReadStream.buffer)
-    .resize({ width: 800 }) // You can adjust the dimensions as needed.
-    .jpeg({ quality: 80 }) 
+    fs.writeFile(filePath, data, async function (error) {
+      if (error) throw error;
 
+      compressImages(
+        filePath,
+        compressedFilePath,
+        { compress_force: false, statistic: true, autoupdate: true },
+        false,
+        { jpg: { engine: "mozjpeg", command: ["-quality", compression] } },
+        {
+          png: {
+            engine: "pngquant",
+            command: ["--quality=" + compression + "-" + compression, "-o"],
+          },
+        },
+        { svg: { engine: "svgo", command: "--multipass" } },
+        {
+          gif: {
+            engine: "gifsicle",
+            command: ["--colors", "64", "--use-col=web"],
+          },
+        },
+        async function (error, completed, statistic) {
+          console.log("-------------");
+          console.log(error);
+          console.log(completed);
+          console.log(statistic);
+          console.log("-------------");
 
-    compressedImage.pipe(imageUploadStream);
+          deleteLocalFile(filePath);
+          deleteLocalFile(inputImagePath);
+          try {
+            const client = mongoose.connection.getClient();
+            const db = client.db("images");
+            const bucket = new mongodb.GridFSBucket(db);
 
-    await new Promise((resolve) => {
-      imageUploadStream.on("finish", () => {
-        // deleteLocalVideoFile(inputImagePath);
-        resolve();
-      });
+            const compressedImagePath = compressedFilePath + videoId + imageURL;
+            const imageUploadStream = bucket.openUploadStream(`${imageURL}`);
+            const imageReadStream = fs.createReadStream(compressedImagePath);
+            imageReadStream.pipe(imageUploadStream);
+
+            console.log("imageUploaded");
+
+            imageUploadStream.on("finish", () => {
+              console.log("File has been compressed and saved.");
+              deleteLocalFile(compressedImagePath);
+            });
+          } catch (mongoError) {
+            console.error("MongoDB error:", mongoError);
+          }
+        }
+      );
     });
+  });
+};
+
+const init_image = async (imageURL, videoId) => {
+  try {
+    await compressImageAndUpload(imageURL, videoId);
   } catch (error) {
-    console.error("Error uploading video:", error);
-    next(error);
+    console.error("Error uploading Image:", error);
   }
 };
 
@@ -117,8 +160,11 @@ export const mongo_video = async (req, res, next) => {
       filename: playlistFileName,
     };
 
-
     const video = await db.collection("fs.files").findOne(criteria);
+
+    if (!video) {
+      return next(createError(404, "Video not found"));
+    }
 
     const videoSize = video.length;
     const start = 0;
@@ -139,11 +185,9 @@ export const mongo_video = async (req, res, next) => {
 
     console.log("File downloaded successfully.");
   } catch (error) {
-    console.error("Error downloading file:", error);
+    next(error);
   }
 };
-
-
 
 export const mongo_image = async (req, res, next) => {
   const client = mongoose.connection.getClient();
@@ -158,7 +202,7 @@ export const mongo_image = async (req, res, next) => {
     };
     const imageFile = await db.collection("fs.files").findOne(criteria);
     if (!imageFile) {
-      return res.status(404).json({ error: "Image not found" });
+      return next(createError(404, "Image not found"));
     }
     const headers = {
       "Content-Type": "'application/octet-stream'",
@@ -174,26 +218,32 @@ export const mongo_image = async (req, res, next) => {
 
 export const addVideo = async (req, res, next) => {
   try {
-    const { title, desc } = req.body;
+    const { title, desc, tags } = req.body;
     const userId = req.user.id;
     const videoUrl = req.files.video[0].filename;
-    const imgUrl = req.files.image[0].filename;
-    console.log(req.files.image[0].filename);
+    const image = req.files.image[0];
+    const imgUrl = image.filename;
+
     const newVideo = new Video({
       userId,
       title,
       desc,
-      imgUrl
+      imgUrl,
+      tags,
     });
 
     const savedVideo = await newVideo.save();
+    const objectIdString = savedVideo._id.toString();
+
     init_video(videoUrl, savedVideo._id);
-    init_image(imgUrl);
+    init_image(imgUrl, objectIdString);
+
     res.status(201).json(savedVideo);
   } catch (err) {
     next(err);
   }
 };
+
 export const updateVideo = async (req, res, next) => {
   try {
     const videoId = req.params.id;
@@ -202,11 +252,11 @@ export const updateVideo = async (req, res, next) => {
     const video = await Video.findById(videoId);
 
     if (!video) {
-      return res.status(404).json("Video not found");
+      return next(createError(404, "Video not found"));
     }
 
     if (req.user.id != video.userId) {
-      return res.status(400).json("You are not authorized to update the video");
+      return next(createError(400, "You are not authorized"));
     }
 
     video.title = title;
@@ -214,7 +264,6 @@ export const updateVideo = async (req, res, next) => {
     video.videoUrl = videoUrl;
     video.tags = tags;
 
-    // Save the updated video document
     const updatedVideo = await video.save();
 
     res.status(200).json(updatedVideo);
@@ -228,12 +277,12 @@ export const deleteVideo = async (req, res, next) => {
   try {
     const video = await Video.findById(req.params.id);
     if (!video) return next(createError(404, "Video not found!"));
-    if (req.user.id === video.userId) {
-      await Video.findByIdAndDelete(req.params.id);
-      res.status(200).json("The video has been deleted.");
-    } else {
-      return next(createError(403, "You can delete only your video!"));
+
+    if (req.user.id != video.userId) {
+      return next(createError(400, "You are not authorized"));
     }
+    await Video.findByIdAndDelete(req.params.id);
+    res.status(200).json("The video has been deleted.");
   } catch (err) {
     next(err);
   }
@@ -270,7 +319,7 @@ export const addShareCount = async (req, res, next) => {
 };
 export const likeVideo = async (req, res, next) => {
   try {
-    const userId = req.user.id; // Assuming you have the user's ID in req.user
+    const userId = req.user.id;
     const videoId = req.params.id;
 
     const existingLike = await LikedVideo.findOne({
@@ -281,7 +330,6 @@ export const likeVideo = async (req, res, next) => {
     if (existingLike) {
       return res.status(400).json("You've already liked this video");
     }
-
     const likeInteraction = new LikedVideo({
       user: userId,
       video: videoId,
@@ -306,7 +354,7 @@ export const likeVideo = async (req, res, next) => {
 
 export const unlikeVideo = async (req, res, next) => {
   try {
-    const userId = req.user.id; // Assuming you have the user's ID in req.user
+    const userId = req.user.id;
     const videoId = req.params.id;
 
     const existinglike = await LikedVideo.findOne({
@@ -315,7 +363,7 @@ export const unlikeVideo = async (req, res, next) => {
     });
 
     if (!existinglike) {
-      return res.status(400).json("You've not liked this video");
+      return next(createError(400, "You've not liked this video"));
     }
 
     await LikedVideo.findByIdAndDelete(existinglike.id);
@@ -332,14 +380,19 @@ export const unlikeVideo = async (req, res, next) => {
 
 export const getRandomVideos = async (req, res, next) => {
   try {
-    const numberOfVideos = 30; // Change this number as needed
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const totalVideosCount = await Video.countDocuments();
+    const totalPages = Math.ceil(totalVideosCount / limit);
+    const randomVideos = await Video.aggregate([{ $sample: { size: limit } }]);
 
-    // Use the aggregate pipeline to get random videos
-    const randomVideos = await Video.aggregate([
-      { $sample: { size: numberOfVideos } },
-    ]);
-
-    res.status(200).json(randomVideos);
+    res.status(200).json({
+      totalPages,
+      page,
+      limit,
+      videos: randomVideos,
+    });
   } catch (err) {
     next(err);
   }
@@ -347,8 +400,23 @@ export const getRandomVideos = async (req, res, next) => {
 
 export const getTrendingVideos = async (req, res, next) => {
   try {
-    const videos = await Video.find().sort({ views: -1 });
-    res.status(200).json(videos);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const totalVideosCount = await Video.countDocuments();
+    const totalPages = Math.ceil(totalVideosCount / limit);
+
+    const videos = await Video.find()
+      .sort({ views: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.status(200).json({
+      totalPages: totalPages,
+      page,
+      limit,
+      videos,
+    });
   } catch (err) {
     next(err);
   }
@@ -357,16 +425,28 @@ export const getTrendingVideos = async (req, res, next) => {
 export const getSubscribedChannelVideos = async (req, res, next) => {
   try {
     const userId = req.user.id;
-
-    // Find the user by ID to get their subscribedUsers array
     const user = await User.findById(userId);
 
-    // Retrieve videos of the subscribed users
-    const subscribedUserVideos = await Video.find({
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const totalsubscribedUserVideosCount = await Video.countDocuments({
       userId: { $in: user.subscribedChannels },
     });
+    const totalPages = Math.ceil(totalsubscribedUserVideosCount / limit);
 
-    res.status(200).json(subscribedUserVideos);
+    const subscribedUserVideos = await Video.find({
+      userId: { $in: user.subscribedChannels },
+    })
+      .skip(skip)
+      .limit(limit);
+
+    res.status(200).json({
+      totalPages,
+      page,
+      limit,
+      videos: subscribedUserVideos,
+    });
   } catch (err) {
     next(err);
   }
@@ -374,12 +454,8 @@ export const getSubscribedChannelVideos = async (req, res, next) => {
 
 export const getVideosByTags = async (req, res, next) => {
   try {
-    const { tags } = req.query; // Assuming tags are passed as a query parameter
-
-    // Convert the tags query parameter into an array
+    const { tags } = req.query;
     const tagsArray = tags.split(",");
-
-    // Use the find method to retrieve videos with matching tags
     const videosWithTags = await Video.find({ tags: { $in: tagsArray } });
 
     res.status(200).json(videosWithTags);

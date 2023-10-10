@@ -1,18 +1,14 @@
 .video-page {
   display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 .video-container {
-  width: 800px;
+  flex: 1;
   padding: 20px;
-  background-color: #f2f2f2;
-  border-radius: 6px;
 }
 
 .video-player {
-  margin-bottom: 20px;
+  width: 100%;
 }
 
 .divider {
@@ -20,6 +16,11 @@
   border: none;
   border-top: 1px solid #ccc;
 }
+
 .recommendation {
+  margin-top: 20px;
+}
+
+.comments {
   margin-top: 20px;
 }

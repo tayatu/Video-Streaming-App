@@ -1,17 +1,18 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { subscription } from "../redux/userSlice";
+import { remove_subscriber } from "../redux/userSlice";
 import { useDispatch } from "react-redux";
 
 const Subscribers = ({ currentVideo, tags }) => {
   const [subscribers, setSubscribers] = useState([]);
   const dispatch = useDispatch();
 
-
-  const handleClick = async (channel) =>{
-    await axios.put(`/users/unsubscribe/${channel._id}`)
-    dispatch(subscription(channel._id));
-  }
+  const handleClick = async (channelId) => {
+    await axios.put(`/users/remove-subscriber/${channelId}`);
+    dispatch(remove_subscriber(channelId));
+    const updatedSubscriber = subscribers.filter((subscribed_channel) => { return subscribed_channel._id !== channelId});
+    setSubscribers(updatedSubscriber)
+  };
 
   useEffect(() => {
     const fetchsubscriber = async () => {
@@ -19,18 +20,24 @@ const Subscribers = ({ currentVideo, tags }) => {
       setSubscribers(res.data);
     };
     fetchsubscriber();
-  }, [subscribers]);
+  }, []);
 
   return (
     <div>
-      {subscribers.map((channel) => (
-        <div key={channel._id}>
-            {channel.name}
+      {subscribers.map((subscriber) => (
+        <div key={subscriber._id} className="channel-card">
+          <img
+            className="channel-image"
+            src={subscriber.img}
+            alt="Channel Thumbnail"
+          />
+          <div className="channel-details">{subscriber.name}</div>
+          <button onClick={() => handleClick(subscriber._id)}>
+            Remove the subscriber
+          </button>
         </div>
       ))}
-      
     </div>
   );
 };
-
 export default Subscribers;

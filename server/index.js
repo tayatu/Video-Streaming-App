@@ -9,12 +9,10 @@ import userRoutes from "./routes/users.js";
 import videoRoutes from "./routes/videos.js";
 import commentRoutes from "./routes/comments.js";
 
-
 const app = express();
 
 app.use(bodyParser.json());
 app.use(cors());
-// update config
 dotenv.config();
 
 const connect = () => {
@@ -28,15 +26,12 @@ const connect = () => {
     });
 };
 
-
-
 app.use(cookieParser())
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/videos", videoRoutes);
 app.use("/api/comments", commentRoutes);
-
 app.use((err, req, res, next) => {
   const status = err.status || 500;
   const message = err.message || "Something went wrong";

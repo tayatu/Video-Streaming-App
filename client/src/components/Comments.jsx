@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-// import "./Comments.css"
+import "./Comments.css"
 import Comment from "./Comment";
 import { useSelector } from "react-redux";
 import axios from "axios";
@@ -45,7 +45,6 @@ const Comments = ({ videoId }) => {
         <div className="NewComment">
           <form onSubmit={handleSubmit}>
             <input
-              className="Input"
               type="text"
               value={commentDescription}
               placeholder="Add a comment..."
@@ -55,7 +54,7 @@ const Comments = ({ videoId }) => {
           </form>
         </div>
       ) : (
-        <span className="Message">Please log in to comment.</span>
+        <span >Please log in to comment.</span>
       )}
       {comments.map((comment) => (
         <Comment key={comment._id} comment={comment} />

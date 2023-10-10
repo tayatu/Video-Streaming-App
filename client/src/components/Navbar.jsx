@@ -13,7 +13,6 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-
   const [q, setQ] = useState("");
 
   const handleLogout = () => {
@@ -24,7 +23,6 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="nav-content">
-
         <Link to="/" style={{ textDecoration: "none" }}>
           <button className="button ">Home</button>
         </Link>
@@ -39,11 +37,11 @@ const Navbar = () => {
           </Link>
         )}
 
-        {/* {currentUser && ( */}
+        {currentUser && (
           <Link to="/upload" style={{ textDecoration: "none" }}>
             <button className="button ">Upload Video</button>
           </Link>
-        {/* )} */}
+        )}
         {currentUser && (
           <Link to="/subscribers" style={{ textDecoration: "none" }}>
             <button className="button ">Subscriber List</button>
@@ -55,11 +53,18 @@ const Navbar = () => {
           </Link>
         )}
 
-        
         <div className="search-box">
-          <input type="text" placeholder="Search..." onChange={(e) => setQ(e.target.value)}/>
-          <button className="search-button" onClick={()=>navigate(`/search?query=${q}`) }>Search</button>
-          
+          <input
+            type="text"
+            placeholder="Search..."
+            onChange={(e) => setQ(e.target.value)}
+          />
+          <button
+            className="search-button"
+            onClick={() => navigate(`/search?query=${q}`)}
+          >
+            Search
+          </button>
         </div>
 
         {currentUser ? (
@@ -78,12 +83,6 @@ const Navbar = () => {
             <button className="sign-in-button">Sign In</button>
           </Link>
         )}
-        {/* <button onClick={() => setOpen(true)} >upload</button> */}
-
-        {/* <Upload setOpen={setOpen} /> */}
-
-        {/* {open && <Upload setOpen={setOpen} />} */}
-
       </div>
     </nav>
   );

@@ -7,7 +7,6 @@ import Search from "./pages/Search";
 import SubscribedChannels from "./pages/SubscribedChannels";
 import Subscribers from "./pages/Subscriber";
 import UploadPage from "./pages/UploadPage";
-// import "./App.css"
 
 function App() {
   return (
@@ -20,19 +19,20 @@ function App() {
             <Route path="trends" element={<Home type="trends" />} />
             <Route path="subscribed" element={<Home type="subscribed" />} />
             <Route path="search" element={<Search />} />
-            
-            <Route path="subscribed-channels" element={<SubscribedChannels  />} />
 
-            <Route path="subscribers" element={<Subscribers  />} />
-            
-            <Route path="upload" element={<UploadPage  />} />
+            <Route
+              path="subscribed-channels"
+              element={<SubscribedChannels />}
+            />
 
+            <Route path="subscribers" element={<Subscribers />} />
+
+            <Route path="upload" element={<UploadPage />} />
 
             <Route path="video">
               <Route path=":id" element={<Video />} />
             </Route>
             <Route path="signin" element={<SignIn />} />
-            
           </Route>
         </Routes>
       </BrowserRouter>
