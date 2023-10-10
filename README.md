@@ -7,15 +7,6 @@ Welcome to the Video Streaming App project! This application is a full-stack vid
 2. [Technical Stack](#technical-stack)
 3. [Features](#features)
 4. [Folder Structure](#folder-structure)
-5. [Authentication](#authentication)
-6. [MVC Architecture](#mvc-architecture)
-7. [Video Upload and Conversion](#video-upload-and-conversion)
-8. [User Subscriptions](#user-subscriptions)
-9. [Recommendation System](#recommendation-system)
-10. [Searching for Videos](#searching-for-videos)
-
-
-Apologies for the oversight. You are correct; the "video-streaming-app" project indeed has two folders, "server" and "client." I'll update the "Getting Started" section to reflect this accurately:
 
 ## Getting Started
 
@@ -91,6 +82,11 @@ The Video Streaming App offers the following features:
 
 10. **Fixed Pagination**: The number of videos shown on a page is fixed and implements pagination to efficiently manage and display large amounts of content.
 
+## Folder Structure
+
+The project's folder structure is organized as follows:
+
+```
 video-streaming-app/
 |-- client/                # React frontend
 |   |-- src/
@@ -105,5 +101,4 @@ video-streaming-app/
 |   |-- public/               # Public assets
 |   |-- ...
 |-- README.md              # Project documentation
-
----
+```
