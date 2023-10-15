@@ -14,9 +14,9 @@ const ChannelDescription = ({ channel, handleSubscribe }) => {
         />
         <div className="ChannelDetail">
           <span className="ChannelName">{channel.name}</span>
-          <span className="ChannelCounter">
-            {channel.subscribers} subscribers
-          </span>
+          <p className="ChannelCounter">
+             subscribers - {channel.subscribers}
+          </p>
         </div>
       </div>
       {currentUser ? (

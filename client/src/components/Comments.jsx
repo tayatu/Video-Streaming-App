@@ -9,6 +9,7 @@ const Comments = ({ videoId }) => {
   const { currentUser } = useSelector((state) => state.user);
 
   const [comments, setComments] = useState([]);
+  const [commentsLoaded, setCommentsLoaded] = useState(0);
   const [commentDescription, setCommentDescription] = useState("");
 
   const handleCommentChange = (e) => {
@@ -26,16 +27,23 @@ const Comments = ({ videoId }) => {
       const res = await axios.get(`/comments/${videoId}`);
       setComments(res.data);
 
+
+    } catch (err) {}
+  };
+
+  const fetchComments = async () => {
+    try {
+
+      const res = await axios.get(`/comments/${videoId}?commentsLoaded=${commentsLoaded}`);
+
+      setComments(res.data);
+      setCommentsLoaded(res.data.length);
+
+      console.log(commentsLoaded);
     } catch (err) {}
   };
 
   useEffect(() => {
-    const fetchComments = async () => {
-      try {
-        const res = await axios.get(`/comments/${videoId}`);
-        setComments(res.data);
-      } catch (err) {}
-    };
     fetchComments();
   }, [videoId]);
 
@@ -59,6 +67,7 @@ const Comments = ({ videoId }) => {
       {comments.map((comment) => (
         <Comment key={comment._id} comment={comment} />
       ))}
+      <button onClick={fetchComments}>Load More Comments</button>
     </div>
   );
 };

@@ -26,6 +26,18 @@ const SignIn = () => {
       dispatch(loginFailure());
     }
   };
+  const handleSignUp = async (e) => {
+    e.preventDefault();
+    dispatch(loginStart());
+    try {
+      const res = await axios.post("/auth/signup", { name, email, password });
+      console.log(res.data);
+      dispatch(loginSuccess(res.data));
+      navigate("/");
+    } catch {
+      dispatch(loginFailure());
+    }
+  };
   return (
     <div className="container">
       <div className="wrapper">
@@ -62,7 +74,7 @@ const SignIn = () => {
           placeholder="password"
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button className="button">Sign up</button>
+        <button className="button"  onClick={handleSignUp}>Sign up</button>
       </div>
     </div>
   );

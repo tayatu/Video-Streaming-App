@@ -13,7 +13,9 @@ import "./Video.css";
 
 const Video = () => {
   const { currentUser } = useSelector((state) => state.user);
-  const { currentVideo } = useSelector((state) => state.video);
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentVideo, setCurrentVideo] = useState(null);
 
   const [isLiked, setIsLiked] = useState(false);
 
@@ -63,8 +65,11 @@ const Video = () => {
           `/videos/is-liked/${videoInfo.data._id}`
         );
 
+        setCurrentVideo(videoInfo.data);
+        setIsLoading(false);
         setChannel(channelInfo.data);
         setIsLiked(isLikedResponse.data.isLiked);
+
         dispatch(fetchSuccess(videoInfo.data));
       } catch (err) {}
     };
@@ -73,37 +78,42 @@ const Video = () => {
 
   return (
     <div className="video-page">
-      <div className="video-container">
-        <div className="video-player">
-          <VideoPlayer src="mount-video" />
+      {!isLoading && currentVideo ? (
+        <div className="video-page">
+          <div className="video-container">
+            <div className="video-player">
+              <VideoPlayer src="mount-video" />
+            </div>
+
+            <VideoDescription
+              currentVideo={currentVideo}
+              isLiked={isLiked}
+              handleLike={handleLike}
+              handleShare={handleShare}
+            />
+            <hr className="divider" />
+
+            <ChannelDescription
+              channel={channel}
+              handleSubscribe={handleSubscribe}
+            />
+
+            <Comments videoId={currentVideo._id} />
+            <hr className="divider"></hr>
+          </div>
+          <div className="recommendation">
+            <Recommendation
+              currentVideo={currentVideo}
+              tags={currentVideo.tags}
+            />
+          </div>
         </div>
-
-        <VideoDescription
-          currentVideo={currentVideo}
-          isLiked={isLiked}
-          handleLike={handleLike}
-          handleShare={handleShare}
-        />
-        <hr className="divider" />
-
-        <ChannelDescription
-          channel={channel}
-          handleSubscribe={handleSubscribe}
-        />
-
-        <div className="recommendation">
-          <Recommendation
-            currentVideo={currentVideo}
-            tags={currentVideo.tags}
-          />
-        </div>
-
-        <Comments videoId={currentVideo._id} />
-
-        <hr className="divider"></hr>
-      </div>
+      ) : (
+        <p>Loading...</p>
+      )}
     </div>
   );
 };
 
 export default Video;
+

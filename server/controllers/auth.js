@@ -11,7 +11,15 @@ export const signup = async (req, res, next) => {
     const newUser = new User({name, email, password: hash });
 
     await newUser.save();
-    res.status(200).send("User has been created!");
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT);
+
+    res
+      .cookie("access_token", token, {
+        httpOnly: true,
+      })
+      .status(200)
+      .json(newUser);
+
   } catch (err) {
     next(err);
   }

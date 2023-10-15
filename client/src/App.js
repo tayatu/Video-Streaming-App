@@ -7,6 +7,7 @@ import Search from "./pages/Search";
 import SubscribedChannels from "./pages/SubscribedChannels";
 import Subscribers from "./pages/Subscriber";
 import UploadPage from "./pages/UploadPage";
+import UploadedVideos from "./pages/UploadedVideos";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
             <Route path="subscribers" element={<Subscribers />} />
 
             <Route path="upload" element={<UploadPage />} />
+            <Route path="uploaded-videos" element={<UploadedVideos />} />
 
             <Route path="video">
               <Route path=":id" element={<Video />} />

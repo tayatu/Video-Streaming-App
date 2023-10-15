@@ -282,6 +282,8 @@ export const deleteVideo = async (req, res, next) => {
       return next(createError(400, "You are not authorized"));
     }
     await Video.findByIdAndDelete(req.params.id);
+    await LikedVideo.deleteMany({ video: video._id })
+    await Comment.deleteMany({videoId: video._id})
     res.status(200).json("The video has been deleted.");
   } catch (err) {
     next(err);
@@ -292,6 +294,19 @@ export const getVideo = async (req, res, next) => {
   try {
     const video = await Video.findById(req.params.id);
     res.status(200).json(video);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getAllVideos = async (req, res, next) => {
+  try {
+    console.log(req.user);
+    const userId = req.user.id;
+    const videos = await Video.find({
+      userId: userId
+    });
+    res.status(200).json(videos);
   } catch (err) {
     next(err);
   }

@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  getAllVideos,
   addVideo,
   updateVideo,
   deleteVideo,
@@ -15,7 +16,7 @@ import {
   searchVideos,
   checkVideoLiked,
   mongo_video,
-  mongo_image,
+  mongo_image,  
 } from "../controllers/video.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 import { upload } from "../middleware/multerFileStorage.js";
@@ -31,6 +32,8 @@ router.post(
   ]),
   addVideo
 );
+
+router.get("/uploaded-videos",verifyToken, getAllVideos);
 router.put("/:id", verifyToken, updateVideo);
 router.delete("/:id", verifyToken, deleteVideo);
 router.get("/find/:id", getVideo);

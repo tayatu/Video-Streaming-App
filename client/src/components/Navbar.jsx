@@ -42,6 +42,12 @@ const Navbar = () => {
             <button className="button ">Upload Video</button>
           </Link>
         )}
+
+        {currentUser && (
+          <Link to="/uploaded-videos" style={{ textDecoration: "none" }}>
+            <button className="button ">Uploaded Videos</button>
+          </Link>
+        )}
         {currentUser && (
           <Link to="/subscribers" style={{ textDecoration: "none" }}>
             <button className="button ">Subscriber List</button>
